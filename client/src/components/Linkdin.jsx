@@ -198,7 +198,6 @@ const Linkdin = () => {
                 ${(loading || !formData.name || !formData.skills) 
                   ? 'opacity-70 cursor-not-allowed' 
                   : 'hover:opacity-90 hover:shadow-md'}`}
->>>>>>> ffcfce3 (add frontend url)
             >
               {loading ? (
                 <>

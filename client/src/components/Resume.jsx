@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { Upload, Loader2, FileText, CheckCircle, Briefcase } from "lucide-react";
+import { SignIn, useUser } from "@clerk/clerk-react";
+import { toast } from "react-toastify";
 
 const Resume = () => {
   const [step, setStep] = useState(1);
@@ -8,29 +10,44 @@ const Resume = () => {
   const [loading, setLoading] = useState(false);
   const [analysis, setAnalysis] = useState(null);
   const [error, setError] = useState("");
+  const [showSignIn, setShowSignIn] = useState(false); // for popup sign-in
+  const { isLoaded, isSignedIn } = useUser();
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     setError("");
-    
+
     if (selectedFile) {
       if (selectedFile.type !== "application/pdf") {
         setError("Please upload a PDF file only.");
         setFile(null);
         return;
       }
-      
+
       if (selectedFile.size > 10 * 1024 * 1024) {
         setError("File size must be less than 10MB.");
         setFile(null);
         return;
       }
-      
+
       setFile(selectedFile);
     }
   };
 
   const handleAnalyze = async () => {
+    if (!isLoaded) return;
+if (!isSignedIn) {
+  toast.warning("Please sign in to analyze your resume.", {
+    position: "top-center",
+    autoClose: 3000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+  });
+  return;
+}
+
     if (!file || !jobTitle.trim()) {
       setError("Please fill job title and upload resume first!");
       return;
@@ -79,9 +96,10 @@ const Resume = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-sky-50 to-blue-50 flex items-start justify-center pb-4 pt-4 sm:pt-8">
+    <div className="min-h-screen w-full py-16 bg-gray-50/50 flex items-start justify-center pb-4 pt-4 sm:pt-8">
       <div className="w-full max-w-6xl bg-white shadow-xl rounded-lg overflow-hidden min-h-[85vh] mx-4 sm:mx-6 my-0">
-        {/* Header with gradient text */}
+        
+        {/* Header */}
         <div className="bg-white p-6 sm:p-8 border-b border-gray-100">
           <h1 className="text-3xl sm:text-4xl font-bold text-center">
             <span className="bg-gradient-to-r from-sky-500 to-blue-600 bg-clip-text text-transparent">
@@ -93,7 +111,7 @@ const Resume = () => {
           </p>
         </div>
 
-        {/* Step Indicator - Mobile responsive */}
+        {/* Step Indicator */}
         <div className="flex items-center justify-between px-4 sm:px-12 py-4 sm:py-6 bg-blue-50">
           {[1, 2, 3].map((stepNum) => (
             <div 
@@ -118,14 +136,13 @@ const Resume = () => {
 
         {/* Content */}
         <div className="p-4 sm:p-6 md:p-8">
-          {/* Error Message */}
           {error && (
             <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm sm:text-base">
               {error}
             </div>
           )}
 
-          {/* Step 1: Job Title - Mobile responsive */}
+          {/* Step 1 */}
           {step === 1 && (
             <div className="text-center max-w-2xl mx-auto">
               <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4">Target Job Role</h2>
@@ -151,7 +168,7 @@ const Resume = () => {
             </div>
           )}
 
-          {/* Step 2: Upload Resume - Mobile responsive */}
+          {/* Step 2 */}
           {step === 2 && (
             <div className="text-center max-w-2xl mx-auto">
               <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4">Upload Resume</h2>
@@ -200,12 +217,11 @@ const Resume = () => {
             </div>
           )}
 
-          {/* Step 3: Result - Mobile responsive */}
+          {/* Step 3 */}
           {step === 3 && analysis && (
             <div className="max-w-4xl mx-auto">
               <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6 text-center">Analysis Result</h2>
               <div className="bg-blue-50 p-4 sm:p-6 md:p-8 rounded-xl space-y-6 sm:space-y-8">
-                {/* ATS Score */}
                 <div className="flex items-start gap-3 sm:gap-4 md:gap-5">
                   <CheckCircle className="text-blue-500 w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 mt-0.5 flex-shrink-0" />
                   <div className="flex-1">
@@ -232,7 +248,6 @@ const Resume = () => {
                   </div>
                 </div>
 
-                {/* Missing Skills */}
                 {analysis.missingSkills.length > 0 && (
                   <div>
                     <p className="font-semibold text-gray-800 mb-3 sm:mb-4 text-base sm:text-lg">Missing Skills:</p>
@@ -246,7 +261,6 @@ const Resume = () => {
                   </div>
                 )}
 
-                {/* Suggestions */}
                 {analysis.suggestions.length > 0 && (
                   <div>
                     <p className="font-semibold text-gray-800 mb-3 sm:mb-4 text-base sm:text-lg">Improvement Suggestions:</p>
@@ -273,6 +287,8 @@ const Resume = () => {
           )}
         </div>
       </div>
+
+      
     </div>
   );
 };

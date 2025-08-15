@@ -120,20 +120,7 @@ const Hero = () => {
         </motion.div>
       </div>
 
-      {/* Floating indicators for scroll hint (optional) */}
-      <motion.div
-        animate={{ y: [0, 10, 0] }}
-        transition={{ repeat: Infinity, duration: 2 }}
-        className="absolute bottom-8 left-1/2 transform -translate-x-1/2 hidden md:block"
-      >
-        <div className="w-8 h-8 border-2 border-gray-400 rounded-full flex items-center justify-center">
-          <motion.div
-            animate={{ y: [0, 5, 0] }}
-            transition={{ repeat: Infinity, duration: 1.5, delay: 0.5 }}
-            className="w-1 h-1 bg-gray-500 rounded-full"
-          ></motion.div>
-        </div>
-      </motion.div>
+     
     </section>
   );
 };

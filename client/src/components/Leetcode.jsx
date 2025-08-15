@@ -37,86 +37,81 @@ const Leetcode = () => {
 
       let score = 0;
 
+      if (profileData.totalQuestions > 0) {
+        score += (profileData.totalSolved / profileData.totalQuestions) * 100;
+      }
 
-if (profileData.totalQuestions > 0) {
-  score += (profileData.totalSolved / profileData.totalQuestions) * 100;
-}
+      const difficultyScore =
+        (profileData.hardSolved * 3 + profileData.mediumSolved * 2 + profileData.easySolved * 1) /
+        ((profileData.totalHard * 3 || 1) +
+         (profileData.totalMedium * 2 || 1) +
+         (profileData.totalEasy * 1 || 1));
+      score += difficultyScore * 10;
 
-const difficultyScore =
-  (profileData.hardSolved * 3 + profileData.mediumSolved * 2 + profileData.easySolved * 1) /
-  ((profileData.totalHard * 3 || 1) +
-   (profileData.totalMedium * 2 || 1) +
-   (profileData.totalEasy * 1 || 1));
-score += difficultyScore * 10;
+      if (profileData.acceptanceRate) {
+        score += (profileData.acceptanceRate / 100) * 5;
+      }
 
-if (profileData.acceptanceRate) {
-  score += (profileData.acceptanceRate / 100) * 5;
-}
+      if (profileData.ranking) {
+        const rankFactor = Math.max(0, (200000 - profileData.ranking) / 200000);
+        score += rankFactor * 5;
+      }
 
-if (profileData.ranking) {
-  const rankFactor = Math.max(0, (200000 - profileData.ranking) / 200000);
-  score += rankFactor * 5;
-}
+      if (profileData.totalSolved >= 100 && score < 40) {
+        score+= 50;
+      }
+      else if (profileData.totalSolved >= 100 && score < 50) {
+        score+= 45;
+      }
+      else if (profileData.totalSolved >= 100 && score < 60) {
+        score+= 40;
+      }
 
-if (profileData.totalSolved >= 100 && score < 40) {
-  score+= 50;
-}
-else if (profileData.totalSolved >= 100 && score < 50) {
-  score+= 45;
-}
-else if (profileData.totalSolved >= 100 && score < 60) {
-  score+= 40;
-}
-
-score = Math.round(Math.min(score, 100));
-
+      score = Math.round(Math.min(score, 100));
 
       setProfile({ ...profileData, score });
 
-    const aiRes = await fetch(`${baseUrl}api/analyze/leetcode`, {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    data: `You are an expert in competitive programming. Analyze this LeetCode profile and return ONLY a VALID JSON object with EXACTLY these 3 fields:
+      // FIXED: Send actual profile data, not a string prompt
+      const aiRes = await fetch(`${baseUrl}api/analyze/leetcode`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          data: profileData  // Send the actual profile data
+        }),
+      });
 
-DO NOT return explanation, markdown, or extra text — only return the JSON object directly.
-
-LeetCode data:
-${JSON.stringify(profileData)}`
-  }),
-});
-
-if (!aiRes.ok) {
-  const errorText = await aiRes.text();
-  console.error("AI API Error:", aiRes.status, errorText);
-  throw new Error(`AI analysis failed: ${aiRes.status} - Check if the API endpoint exists`);
-}
-
-const contentType = aiRes.headers.get("content-type");
-if (!contentType || !contentType.includes("application/json")) {
-  const responseText = await aiRes.text();
-  console.error("Non-JSON response:", responseText);
-  throw new Error("Server returned HTML instead of JSON - check your API endpoint");
-}
-
-const aiData = await aiRes.json();
-
-      let cleanedText = aiData?.text?.trim();
-      if (cleanedText?.startsWith("```")) {
-        cleanedText = cleanedText.replace(/^```(?:json)?\n?/, "").replace(/```$/, "").trim();
+      if (!aiRes.ok) {
+        const errorText = await aiRes.text();
+        console.error("AI API Error:", aiRes.status, errorText);
+        throw new Error(`AI analysis failed: ${aiRes.status}`);
       }
 
-      const parsed = JSON.parse(cleanedText);
+      const aiData = await aiRes.json();
 
-      if (
-        parsed &&
-        Array.isArray(parsed.strengths) &&
-        Array.isArray(parsed.weaknesses) &&
-        Array.isArray(parsed.nextRecommendedQuestions)
-      ) {
-        setAnalysis(parsed);
+      // Check if we got the expected structure directly
+      if (aiData.strengths && aiData.weaknesses && aiData.nextRecommendedQuestions) {
+        setAnalysis(aiData);
+      } else if (aiData.text) {
+        // Handle the old text-based response format
+        let cleanedText = aiData.text.trim();
+        if (cleanedText.startsWith("```")) {
+          cleanedText = cleanedText.replace(/^```(?:json)?\n?/, "").replace(/```$/, "").trim();
+        }
+
+        const parsed = JSON.parse(cleanedText);
+
+        if (
+          parsed &&
+          Array.isArray(parsed.strengths) &&
+          Array.isArray(parsed.weaknesses) &&
+          Array.isArray(parsed.nextRecommendedQuestions)
+        ) {
+          setAnalysis(parsed);
+        } else {
+          throw new Error("AI returned an unexpected structure.");
+        }
       } else {
-        throw new Error("AI returned an unexpected structure.");
+        throw new Error("Invalid response format from server");
       }
 
     } catch (err) {
@@ -167,8 +162,7 @@ const aiData = await aiRes.json();
                   handleSampleClick(sample.username);
                   setShowWelcome(false);
                 }}
-                className="px-3 cursor-pointer
-                 py-1.5 text-sm bg-white hover:bg-gray-100 text-gray-700 rounded-full transition-colors flex items-center shadow-sm border border-gray-200"
+                className="px-3 cursor-pointer py-1.5 text-sm bg-white hover:bg-gray-100 text-gray-700 rounded-full transition-colors flex items-center shadow-sm border border-gray-200"
               >
                 {sample.name}
               </button>

@@ -2,21 +2,31 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import router from "./router/router.js";
-import connectDB from "./utils/dbConnection.js";
 import profileRoute from "./router/ProfileRoute.js";
+import connectDB from "./utils/dbConnection.js";
 
 dotenv.config();
 
 const app = express();
-app.use(cors({ origin: 'http://localhost:5173' }));
+
+// CORS Configuration
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production'
+    ? process.env.FRONTENED_URL
+    : 'http://localhost:5173',
+  credentials: true
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.use("/api",router);
 app.use("/api/profile",profileRoute)
 
+
 connectDB();
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

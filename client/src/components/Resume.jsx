@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Upload, Loader2, FileText, CheckCircle, Briefcase } from "lucide-react";
 import { SignIn, useUser } from "@clerk/clerk-react";
 import { toast } from "react-toastify";
+import { baseUrl } from "../utils/baseurl";
 
 const Resume = () => {
   const [step, setStep] = useState(1);
@@ -61,7 +62,7 @@ if (!isSignedIn) {
       formData.append("jobTitle", jobTitle);
       formData.append("resume", file);
 
-      const res = await fetch("http://localhost:3000/api/resume-analyze", {
+      const res = await fetch(`${baseUrl}api/resume-analyze`, {
         method: "POST",
         body: formData,
       });

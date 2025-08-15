@@ -2,6 +2,7 @@ import { useUser } from "@clerk/clerk-react";
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { baseUrl } from "../utils/baseurl";
 
 // Main Dashboard Component
 const Dashboard = () => {
@@ -14,7 +15,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await fetch(`http://localhost:3000/api/profile/${userId}`);
+        const res = await fetch(`${baseUrl}api/profile/${userId}`);
         if (!res.ok) throw new Error("Failed to fetch profile");
         const data = await res.json();
         setProfile(data);

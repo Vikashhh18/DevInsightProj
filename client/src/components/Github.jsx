@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
+import { baseUrl } from "../utils/baseurl";
 
 const Github = () => {
   const [username, setUsername] = useState("");
@@ -77,7 +78,7 @@ const Github = () => {
       setGithubScore(displayScore);
 
       // Step 2: Save to MongoDB via API (send userId + username)
-      const saveRes = await fetch("http://localhost:3000/api/profile/github", {
+      const saveRes = await fetch(`${baseUrl}api/profile/github`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -98,7 +99,7 @@ const Github = () => {
       }
 
       // Step 3: Call AI API to analyze profile
-      const aiRes = await fetch("http://localhost:3000/api/analyze/github", {
+      const aiRes = await fetch(`${baseUrl}api/analyze/github`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

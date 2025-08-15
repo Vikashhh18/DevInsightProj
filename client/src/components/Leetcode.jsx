@@ -1,5 +1,6 @@
 import { useUser } from "@clerk/clerk-react";
 import { useState } from "react";
+import { baseUrl } from "../utils/baseurl";
 
 const Leetcode = () => {
   const { user } = useUser();
@@ -31,7 +32,7 @@ const Leetcode = () => {
 
     try {
       // Step 1: Fetch LeetCode profile data
-      const res = await fetch(`http://localhost:3000/api/leetcode/${username}`);
+      const res = await fetch(`${baseUrl}api/leetcode/${username}`);
       if (!res.ok) throw new Error("LeetCode user not found.");
       const profileData = await res.json();
 
@@ -78,26 +79,11 @@ score = Math.round(Math.min(score, 100));
       setProfile({ ...profileData, score });
 
       // Step 2: Save to MongoDB via API
-      const saveRes = await fetch("http://localhost:3000/api/profile/leetcode", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: userId || "guest",
-          username: username
-        })
-      });
-
-      if (!saveRes.ok) {
-        const saveErr = await saveRes.json();
-        console.error("Save Error:", saveErr);
-      }
-
-      // Step 3: Send to backend for AI analysis
-      const aiRes = await fetch("http://localhost:3000/api/analyze/leetcode", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          data: `You are an expert in competitive programming. Analyze this LeetCode profile and return ONLY a VALID JSON object with EXACTLY these 3 fields:
+    const aiRes = await fetch(`${baseUrl}api/analyze/leetcode`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    data: `You are an expert in competitive programming. Analyze this LeetCode profile and return ONLY a VALID JSON object with EXACTLY these 3 fields:
 - strengths: array of strings
 - weaknesses: array of strings
 - nextRecommendedQuestions: array of strings
@@ -106,10 +92,25 @@ DO NOT return explanation, markdown, or extra text — only return the JSON obje
 
 LeetCode data:
 ${JSON.stringify(profileData)}`
-        }),
-      });
+  }),
+});
 
-      const aiData = await aiRes.json();
+// Add proper error handling
+if (!aiRes.ok) {
+  const errorText = await aiRes.text();
+  console.error("AI API Error:", aiRes.status, errorText);
+  throw new Error(`AI analysis failed: ${aiRes.status} - Check if the API endpoint exists`);
+}
+
+// Check if response is actually JSON
+const contentType = aiRes.headers.get("content-type");
+if (!contentType || !contentType.includes("application/json")) {
+  const responseText = await aiRes.text();
+  console.error("Non-JSON response:", responseText);
+  throw new Error("Server returned HTML instead of JSON - check your API endpoint");
+}
+
+const aiData = await aiRes.json();
 
       // Step 4: Clean AI response
       let cleanedText = aiData?.text?.trim();

@@ -121,19 +121,6 @@ const Linkdin = () => {
   };
 
   return (
-<<<<<<< HEAD
-    <div className="min-h-screen bg-gradient-to-tr from-blue-50 to-white py-10 px-4 md:px-12">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
-         <div className="w-full md:w-1/2 px-4 mb-8 md:mb-0">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-blue-700 flex items-center gap-2">
-              <Linkedin className="text-blue-600" size={24} /> LinkedIn Optimizer
-            </h2>
-            <button 
-              onClick={openLinkedIn}
-              disabled={!formData.linkedinUrl}
-              className={`flex items-center cursor-pointer gap-1 text-sm ${formData.linkedinUrl ? 'text-blue-600 hover:underline' : 'text-gray-400 cursor-not-allowed'}`}
-=======
     <div className="py-12 bg-gray-50/50">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-10">

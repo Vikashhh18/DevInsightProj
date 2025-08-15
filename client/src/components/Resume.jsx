@@ -11,7 +11,7 @@ const Resume = () => {
   const [loading, setLoading] = useState(false);
   const [analysis, setAnalysis] = useState(null);
   const [error, setError] = useState("");
-  const [showSignIn, setShowSignIn] = useState(false); // for popup sign-in
+  const [showSignIn, setShowSignIn] = useState(false);
   const { isLoaded, isSignedIn } = useUser();
 
   const handleFileChange = (e) => {
@@ -100,7 +100,6 @@ if (!isSignedIn) {
     <div className="min-h-screen w-full py-16 bg-gray-50/50 flex items-start justify-center pb-4 pt-4 sm:pt-8">
       <div className="w-full max-w-6xl bg-white shadow-xl rounded-lg overflow-hidden min-h-[85vh] mx-4 sm:mx-6 my-0">
         
-        {/* Header */}
         <div className="bg-white p-6 sm:p-8 border-b border-gray-100">
           <h1 className="text-3xl sm:text-4xl font-bold text-center">
             <span className="bg-gradient-to-r from-sky-500 to-blue-600 bg-clip-text text-transparent">
@@ -112,7 +111,6 @@ if (!isSignedIn) {
           </p>
         </div>
 
-        {/* Step Indicator */}
         <div className="flex items-center justify-between px-4 sm:px-12 py-4 sm:py-6 bg-blue-50">
           {[1, 2, 3].map((stepNum) => (
             <div 
@@ -135,7 +133,6 @@ if (!isSignedIn) {
           ))}
         </div>
 
-        {/* Content */}
         <div className="p-4 sm:p-6 md:p-8">
           {error && (
             <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm sm:text-base">
@@ -143,7 +140,6 @@ if (!isSignedIn) {
             </div>
           )}
 
-          {/* Step 1 */}
           {step === 1 && (
             <div className="text-center max-w-2xl mx-auto">
               <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4">Target Job Role</h2>
@@ -169,7 +165,6 @@ if (!isSignedIn) {
             </div>
           )}
 
-          {/* Step 2 */}
           {step === 2 && (
             <div className="text-center max-w-2xl mx-auto">
               <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4">Upload Resume</h2>
@@ -218,7 +213,6 @@ if (!isSignedIn) {
             </div>
           )}
 
-          {/* Step 3 */}
           {step === 3 && analysis && (
             <div className="max-w-4xl mx-auto">
               <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6 text-center">Analysis Result</h2>

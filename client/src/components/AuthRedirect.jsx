@@ -3,7 +3,7 @@ import { useState } from "react";
 
 const AuthRedirect = ({ children }) => {
   const { isLoaded, isSignedIn } = useUser();
-  //  const [isSignIn, setIsSignIn] = useState(true);
+
 
 
   if (!isLoaded) return null;

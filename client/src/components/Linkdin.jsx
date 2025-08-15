@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Loader2, Copy, Check, Linkedin } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useUser } from "@clerk/clerk-react";
+import { baseUrl } from "../utils/baseurl";
 
 const Linkdin = () => {
   
@@ -36,9 +37,9 @@ const Linkdin = () => {
 
     setLoading(true);
     try {
-      // Step 1: Generate LinkedIn suggestions
+
       console.log("Generating LinkedIn suggestions...");
-      const res = await fetch("http://localhost:3000/api/linkedin/generate", {
+      const res = await fetch(`${baseUrl}api/linkedin/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -52,11 +53,11 @@ const Linkdin = () => {
       console.log("Generated data:", data);
       setGenerated(data);
 
-      // Step 2: Save to database
+
       if (userId) {
         console.log("Saving to database...");
         
-        // Prepare the data to save
+
         const saveData = {
           userId: userId,
           username: formData.name,
@@ -69,13 +70,13 @@ const Linkdin = () => {
 
         console.log("Data to save:", saveData);
 
-        const saveRes = await fetch("http://localhost:3000/api/profile/linkdin", {
+        const saveRes = await fetch(`${baseUrl}api/profile/linkdin`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(saveData),
         });
 
-        const saveResult = await saveRes.text(); // Get raw text first
+        const saveResult = await saveRes.text();
         console.log("Save response status:", saveRes.status);
         console.log("Save response raw:", saveResult);
 
@@ -134,8 +135,7 @@ const Linkdin = () => {
   return (
     <div className="min-h-screen bg-gradient-to-tr from-blue-50 to-white py-10 px-4 md:px-12">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Left - Form */}
-        <div className="bg-white rounded-3xl shadow-xl p-6 md:p-8 space-y-6">
+                                <div className="w-full md:w-1/2 px-4 mb-8 md:mb-0"
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold text-blue-700 flex items-center gap-2">
               <Linkedin className="text-blue-600" size={24} /> LinkedIn Optimizer
@@ -204,7 +204,6 @@ const Linkdin = () => {
           </button>
         </div>
 
-        {/* Right - Output */}
         <div className="bg-white rounded-3xl shadow-xl p-6 md:p-8 space-y-6 overflow-auto">
           <h2 className="text-2xl font-bold text-blue-700 flex items-center gap-2">
             <Check className="text-blue-600" size={24} /> Suggestions Generated

@@ -1,5 +1,4 @@
 import { motion } from "framer-motion";
-// import { Link } from "lucide-react";
 import { Link } from "react-router-dom";
 import { 
   FcAbout, 
@@ -77,7 +76,6 @@ const Work = () => {
               whileHover={{ y: -5 }}
               className={`h-full bg-white rounded-lg border ${step.color} p-5 transition-all duration-200 shadow-xs hover:shadow-sm relative overflow-hidden`}
             >
-              {/* Step number */}
               <div className="absolute top-4 right-4 text-xs font-medium text-gray-400">
                 {step.step}
               </div>

@@ -31,7 +31,6 @@ const testimonials = [
 const Testimonial = () => {
   return (
     <section className=" py-16 bg-gray-50/50">
-      {/* Decorative elements */}
       <div className="absolute top-0 left-0 w-32 h-32 bg-sky-200 rounded-full opacity-20 blur-3xl"></div>
       <div className="absolute bottom-0 right-0 w-32 h-32 bg-indigo-200 rounded-full opacity-20 blur-3xl"></div>
       

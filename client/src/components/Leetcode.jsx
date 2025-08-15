@@ -31,19 +31,17 @@ const Leetcode = () => {
     setShowWelcome(false);
 
     try {
-      // Step 1: Fetch LeetCode profile data
       const res = await fetch(`${baseUrl}api/leetcode/${username}`);
       if (!res.ok) throw new Error("LeetCode user not found.");
       const profileData = await res.json();
 
       let score = 0;
 
-// 1. Base score (max 80 pts)
+
 if (profileData.totalQuestions > 0) {
   score += (profileData.totalSolved / profileData.totalQuestions) * 100;
 }
 
-// 2. Difficulty bonus (max 10 pts)
 const difficultyScore =
   (profileData.hardSolved * 3 + profileData.mediumSolved * 2 + profileData.easySolved * 1) /
   ((profileData.totalHard * 3 || 1) +
@@ -51,18 +49,15 @@ const difficultyScore =
    (profileData.totalEasy * 1 || 1));
 score += difficultyScore * 10;
 
-// 3. Acceptance bonus (max 5 pts)
 if (profileData.acceptanceRate) {
   score += (profileData.acceptanceRate / 100) * 5;
 }
 
-// 4. Rank bonus (max 5 pts)
 if (profileData.ranking) {
   const rankFactor = Math.max(0, (200000 - profileData.ranking) / 200000);
   score += rankFactor * 5;
 }
 
-// 🎯 Motivation floor: active users never drop below 40
 if (profileData.totalSolved >= 100 && score < 40) {
   score+= 50;
 }
@@ -78,15 +73,11 @@ score = Math.round(Math.min(score, 100));
 
       setProfile({ ...profileData, score });
 
-      // Step 2: Save to MongoDB via API
     const aiRes = await fetch(`${baseUrl}api/analyze/leetcode`, {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
     data: `You are an expert in competitive programming. Analyze this LeetCode profile and return ONLY a VALID JSON object with EXACTLY these 3 fields:
-- strengths: array of strings
-- weaknesses: array of strings
-- nextRecommendedQuestions: array of strings
 
 DO NOT return explanation, markdown, or extra text — only return the JSON object directly.
 
@@ -95,14 +86,12 @@ ${JSON.stringify(profileData)}`
   }),
 });
 
-// Add proper error handling
 if (!aiRes.ok) {
   const errorText = await aiRes.text();
   console.error("AI API Error:", aiRes.status, errorText);
   throw new Error(`AI analysis failed: ${aiRes.status} - Check if the API endpoint exists`);
 }
 
-// Check if response is actually JSON
 const contentType = aiRes.headers.get("content-type");
 if (!contentType || !contentType.includes("application/json")) {
   const responseText = await aiRes.text();
@@ -112,7 +101,6 @@ if (!contentType || !contentType.includes("application/json")) {
 
 const aiData = await aiRes.json();
 
-      // Step 4: Clean AI response
       let cleanedText = aiData?.text?.trim();
       if (cleanedText?.startsWith("```")) {
         cleanedText = cleanedText.replace(/^```(?:json)?\n?/, "").replace(/```$/, "").trim();
@@ -120,7 +108,6 @@ const aiData = await aiRes.json();
 
       const parsed = JSON.parse(cleanedText);
 
-      // Step 5: Validate structure
       if (
         parsed &&
         Array.isArray(parsed.strengths) &&
@@ -152,7 +139,6 @@ const aiData = await aiRes.json();
         <p className="text-gray-600">Unlock insights to level up your coding skills</p>
       </div>
 
-      {/* Welcome Section */}
       {showWelcome && (
         <div className="mb-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
           <div className="flex justify-between items-start">
@@ -191,7 +177,6 @@ const aiData = await aiRes.json();
         </div>
       )}
 
-      {/* Input Section */}
       <div className="flex flex-col space-y-4 mb-6">
         <div className="flex gap-3">
           <input
@@ -218,7 +203,6 @@ const aiData = await aiRes.json();
         )}
       </div>
 
-      {/* Loading Skeleton */}
       {loading && !profile && (
         <div className="space-y-6">
           <div className="animate-pulse bg-gray-200 rounded-xl h-64"></div>
@@ -227,7 +211,6 @@ const aiData = await aiRes.json();
         </div>
       )}
 
-      {/* Profile Overview */}
       {profile && (
         <div className="mt-6 p-5 border border-gray-200 rounded-xl bg-gray-50">
           <div className="flex items-center justify-between mb-4">
@@ -296,7 +279,6 @@ const aiData = await aiRes.json();
         </div>
       )}
 
-      {/* AI Analysis */}
       {analysis && (
         <div className="mt-8 space-y-6">
           <h3 className="text-2xl font-bold text-gray-800 mb-2">Detailed Analysis</h3>

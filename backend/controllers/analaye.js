@@ -8,7 +8,6 @@ const cohere = new CohereClient({
   token: process.env.COHERE_API_KEY,
 });
 
-// GitHub Analysis
 export const githubAnalys = async (req, res) => {
   try {
     const { transcript } = req.body;
@@ -20,7 +19,7 @@ export const githubAnalys = async (req, res) => {
     const response = await cohere.chat({
       model: "command-r-plus",
       temperature: 0.3,
-      message: transcript,  // Use 'message' instead of 'messages'
+      message: transcript,
     });
 
     const text = response.text || "";
@@ -31,7 +30,6 @@ export const githubAnalys = async (req, res) => {
   }
 };
 
-// Fetch LeetCode Profile
 export const fetchLeetcodeProfile = async (req, res) => {
   const { username } = req.params;
 
@@ -47,7 +45,6 @@ export const fetchLeetcodeProfile = async (req, res) => {
   }
 };
 
-// LeetCode Analysis - FIXED VERSION
 export const leetcodeAnalys = async (req, res) => {
   try {
     
@@ -57,12 +54,12 @@ export const leetcodeAnalys = async (req, res) => {
       return res.status(400).json({ error: "Data is required for analysis" });
     }
 
-    // Convert data to string if it's an object
+
     let analysisPrompt;
     if (typeof data === "string") {
       analysisPrompt = data;
     } else if (typeof data === "object") {
-      // Create a structured prompt with the profile data
+
       analysisPrompt = `You are an expert in competitive programming. Analyze this LeetCode profile and return ONLY a VALID JSON object with EXACTLY these 3 fields:
 - strengths: array of strings
 - weaknesses: array of strings  
@@ -89,15 +86,15 @@ Based on this data, provide insights about strengths, areas to improve, and spec
     }
 
 
-    // FIXED: Use the correct Cohere API format
+
     const response = await cohere.chat({
       model: "command-r-plus",
       temperature: 0.3,
-      message: analysisPrompt,  // Use 'message' instead of 'messages' array
+      message: analysisPrompt,
     });
 
 
-    // Get the response text
+
     const text = response.text || "";
 
     if (!text || text.trim() === "") {
@@ -106,17 +103,17 @@ Based on this data, provide insights about strengths, areas to improve, and spec
     }
 
 
-    // Clean up the response (remove markdown formatting if present)
+
     let cleanedText = text.trim();
     if (cleanedText.startsWith("```")) {
       cleanedText = cleanedText.replace(/^```(?:json)?\n?/, "").replace(/```$/, "").trim();
     }
 
-    // Validate that it's valid JSON
+
     try {
       const parsed = JSON.parse(cleanedText);
       
-      // Ensure the response has the expected structure
+
       if (!parsed.strengths || !parsed.weaknesses || !parsed.nextRecommendedQuestions) {
         throw new Error("AI response missing required fields");
       }
@@ -125,7 +122,7 @@ Based on this data, provide insights about strengths, areas to improve, and spec
         throw new Error("AI response fields are not arrays");
       }
 
-      // Return the cleaned text (not the parsed object)
+
       res.status(200).json({ 
         text: cleanedText,
         success: true 
@@ -135,7 +132,7 @@ Based on this data, provide insights about strengths, areas to improve, and spec
       console.error("JSON parsing failed:", parseError.message);
       console.error("Cleaned text:", cleanedText);
       
-      // Return a fallback response based on the actual data
+
       const fallbackResponse = {
         strengths: [
           data.totalSolved >= 100 ? "Consistent problem solver with good volume" : "Getting started with problem solving",
@@ -188,7 +185,7 @@ export const linkdinGenerate = async (req, res) => {
     return res.status(400).json({ error: "Name and skills are required fields" });
   }
 
-  // Improved prompt with clear instructions for structured output
+
   const prompt = `Generate a professional LinkedIn profile optimization with the following structure:
 
   **Headline**: [Create a compelling 120-character headline for ${name} that incorporates their key skills: ${skills}]
@@ -219,13 +216,13 @@ export const linkdinGenerate = async (req, res) => {
     const response = await cohere.generate({
       model: "command-xlarge",
       prompt,
-      max_tokens: 500, // Increased for longer about section
-      temperature: 0.6, // Slightly lower for more focused results
+      max_tokens: 500,
+      temperature: 0.6,
     });
 
     const output = response.generations[0].text.trim();
 
-    // Parse the structured response
+
     const headlineMatch = output.match(/HEADLINE:\s*(.+)/i);
     const aboutMatch = output.match(/ABOUT:\s*([\s\S]+?)SKILLS:/i);
     const skillsMatch = output.match(/SKILLS:\s*(.+)/i);
@@ -233,10 +230,10 @@ export const linkdinGenerate = async (req, res) => {
     const headline = headlineMatch ? headlineMatch[1].trim() : "";
     let about = aboutMatch ? aboutMatch[1].trim() : "";
     
-    // Clean up the about section
+
     about = about.replace(/\n+/g, '\n').trim();
     
-    // Process skills - use provided skills if parsing fails
+
     let skillsArray = skills.split(',').map(s => s.trim()).slice(0, 10);
     if (skillsMatch) {
       skillsArray = skillsMatch[1].split(',').map(s => s.trim()).filter(s => s);
@@ -279,7 +276,7 @@ export const ProfileSection =async (req, res) => {
       return res.status(200).json({ message: "Profile updated", profile });
     }
 
-    // Create new profile
+
     profile = new Profile({
       userId,
       github,

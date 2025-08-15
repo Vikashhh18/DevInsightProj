@@ -19,7 +19,6 @@ const About = () => {
         transition={{ duration: 0.6 }}
         className="max-w-4xl mx-auto bg-white shadow-lg rounded-2xl overflow-hidden"
       >
-        {/* Header with gradient */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white">
           <h1 className="text-3xl font-bold">About DevInsight</h1>
           <p className="mt-2 text-blue-100">
@@ -86,7 +85,6 @@ const About = () => {
         </div>
       </motion.div>
 
-      {/* Personal note section */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

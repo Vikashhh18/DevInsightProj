@@ -1,17 +1,14 @@
 import dotenv from "dotenv";
 import { CohereClient } from "cohere-ai";
 import multer from "multer";
-// Fix for pdf-parse import issue
 import pdfParse from "pdf-parse/lib/pdf-parse.js";
 
 dotenv.config();
 
-// Initialize Cohere client
 const cohere = new CohereClient({
   token: process.env.COHERE_API_KEY,
 });
 
-// Multer configuration for file uploads
 const upload = multer({
   storage: multer.memoryStorage(),
   fileFilter: (req, file, cb) => {
@@ -30,32 +27,27 @@ const upload = multer({
     cb(null, true);
   },
   limits: { 
-    fileSize: 10 * 1024 * 1024, // 10MB limit
+    fileSize: 10 * 1024 * 1024,
   },
 });
 
-// Export multer middleware
 export const uploadMiddleware = upload.single("resume");
 
-// Alternative PDF parser using pdf2pic or just pdf-parse with proper options
 const extractTextFromPDF = async (buffer) => {
   try {
-    // Use pdf-parse with minimal options to avoid test file issues
     const options = {
-      // Don't use any test files or version checks
       version: 'v1.10.100',
-      max: 0, // process all pages
+      max: 0,
     };
     
     const data = await pdfParse(buffer, options);
     
     let text = data.text;
     
-    // Clean up the extracted text
     text = text
-      .replace(/\s+/g, ' ') // Replace multiple spaces with single space
-      .replace(/\n+/g, '\n') // Replace multiple newlines with single newline
-      .replace(/[^\x20-\x7E\n]/g, '') // Remove non-printable characters except newlines
+      .replace(/\s+/g, ' ')
+      .replace(/\n+/g, '\n')
+      .replace(/[^\x20-\x7E\n]/g, '')
       .trim();
     
     return text;
@@ -65,14 +57,11 @@ const extractTextFromPDF = async (buffer) => {
   }
 };
 
-// Main resume analysis controller
 export const resumeAnalyze = async (req, res) => {
   try {
-    // Extract data from request
     const { jobTitle } = req.body;
     const resumeFile = req.file;
 
-    // Validation
     if (!jobTitle || typeof jobTitle !== 'string' || jobTitle.trim().length === 0) {
       return res.status(400).json({
         success: false,
@@ -94,7 +83,6 @@ export const resumeAnalyze = async (req, res) => {
       });
     }
 
-    // Extract text from PDF
     let resumeText;
     try {
       resumeText = await extractTextFromPDF(resumeFile.buffer);
@@ -106,7 +94,6 @@ export const resumeAnalyze = async (req, res) => {
       });
     }
 
-    // Validate extracted text
     if (!resumeText || resumeText.length < 50) {
       return res.status(400).json({
         success: false,
@@ -114,8 +101,6 @@ export const resumeAnalyze = async (req, res) => {
       });
     }
 
-
-    // Create enhanced prompt for Cohere
     const prompt = `You are an expert ATS (Applicant Tracking System) resume analyzer. Analyze the following resume for the job title "${jobTitle}".
 
 Provide a comprehensive analysis and return ONLY valid JSON in this exact format:
@@ -136,8 +121,6 @@ Resume Content:
 ${resumeText.substring(0, 4000)}
 
 Return only the JSON object, no other text.`;
-
-    // Call Cohere API
     const response = await cohere.chat({
       message: prompt,
       model: "command-r-plus",

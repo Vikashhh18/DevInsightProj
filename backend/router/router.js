@@ -5,21 +5,14 @@ import {  resumeAnalyze, uploadMiddleware } from "../controllers/resumeControlle
 
 const router = express.Router();
 
-// router.post("/save",ProfileSection)
-
-
 router.post("/analyze/github", githubAnalys); 
 
 router.post("/resume-analyze", uploadMiddleware, resumeAnalyze);
 
+router.get("/leetcode/:username", fetchLeetcodeProfile);
+router.post("/analyze/leetcode", leetcodeAnalys);
 
-router.get("/leetcode/:username", fetchLeetcodeProfile); // <-- handles profile fetch
-router.post("/analyze/leetcode", leetcodeAnalys); // <-- handles AI analysis
-
-router.post("/linkedin/generate",linkdinGenerate)
-
-
-// router.get("/profile/:userId",profileRoutes);
+router.post("/linkedin/generate",linkdinGenerate);
 
 
 export default router;

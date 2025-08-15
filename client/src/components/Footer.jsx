@@ -7,13 +7,11 @@ const Footer = () => {
 
   return (
     <footer className="relative bg-gradient-to-br from-gray-900 to-gray-800 text-gray-300 pt-20 pb-10 overflow-hidden">
-      {/* Decorative elements */}
-      <div className="absolute top-0 left-0 w-64 h-64 bg-sky-900 rounded-full opacity-10 blur-3xl"></div>
+            <div className="absolute top-0 -left-96 w-96 h-96 bg-sky-100 rounded-full opacity-20 mix-blend-multiply blur-3xl animate-float-slow"></div>
       <div className="absolute bottom-0 right-0 w-64 h-64 bg-indigo-900 rounded-full opacity-10 blur-3xl"></div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-16">
-          {/* Brand Column */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -57,7 +55,6 @@ const Footer = () => {
             </div>
           </motion.div>
 
-          {/* Links Column */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -86,7 +83,6 @@ const Footer = () => {
             </ul>
           </motion.div>
 
-          {/* Resources Column */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -117,7 +113,6 @@ const Footer = () => {
             </ul>
           </motion.div>
 
-          {/* Contact Column */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -142,7 +137,6 @@ const Footer = () => {
           </motion.div>
         </div>
 
-        {/* Divider */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}

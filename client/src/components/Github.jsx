@@ -25,23 +25,22 @@ const Github = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Function to calculate score on frontend (for immediate display)
   const calculateDisplayScore = (profileData, totalStars = 0) => {
     let score = 0;
 
-    // Public Repos (0-25 points)
+
     const repoScore = Math.min((profileData.public_repos / 20) * 25, 25);
     score += repoScore;
 
-    // Followers (0-20 points)
+
     const followerScore = Math.min((profileData.followers / 100) * 20, 20);
     score += followerScore;
 
-    // Stars received (0-15 points) - estimated
+
     const starScore = Math.min((totalStars / 50) * 15, 15);
     score += starScore;
 
-    // Profile completeness (0-15 points)
+
     let profileScore = 0;
     if (profileData.bio) profileScore += 5;
     if (profileData.company) profileScore += 3;
@@ -50,7 +49,7 @@ const Github = () => {
     if (profileData.twitter_username) profileScore += 2;
     score += profileScore;
 
-    // Base activity score (0-25 points) - estimated based on repos and followers
+
     const activityScore = Math.min(((profileData.public_repos * 0.5 + profileData.followers * 0.1) / 10) * 25, 25);
     score += activityScore;
 
@@ -67,17 +66,17 @@ const Github = () => {
     setShowWelcome(false);
 
     try {
-      // Step 1: Fetch GitHub Profile
+
       const response = await fetch(`https://api.github.com/users/${username}`);
       if (!response.ok) throw new Error("GitHub user not found");
       const data = await response.json();
       setProfile(data);
 
-      // Calculate and display score immediately
+
       const displayScore = calculateDisplayScore(data);
       setGithubScore(displayScore);
 
-      // Step 2: Save to MongoDB via API (send userId + username)
+
       const saveRes = await fetch(`${baseUrl}api/profile/github`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -92,13 +91,13 @@ const Github = () => {
         console.error("Save Error:", saveErr);
       } else {
         const saveData = await saveRes.json();
-        // Update score with more accurate backend calculation if available
+
         if (saveData.score) {
           setGithubScore(saveData.score);
         }
       }
 
-      // Step 3: Call AI API to analyze profile
+
       const aiRes = await fetch(`${baseUrl}api/analyze/github`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

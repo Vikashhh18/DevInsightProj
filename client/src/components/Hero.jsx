@@ -1,10 +1,9 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import dashboardImage from "/image.png"; // Update with your actual image path
-// import fallbackImage from "/fallback.png"; // Optional fallback
+import dashboardImage from "/image.png";
 
 const Hero = () => {
-  // Animation variants
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -30,18 +29,15 @@ const Hero = () => {
 
   return (
    <section className=" bg-gradient-to-br from-gray-50 to-gray-100 text-gray-900 ">
-  {/* Background shapes - full screen */}
-  {/* <div className="absolute inset-0 overflow-hidden"> */}
    <div className="absolute inset-0 w-full overflow-hidden">
   <div className="absolute top-0 -left-40 w-96 h-96 bg-sky-100 rounded-full opacity-70 blur-3xl animate-float-slow"></div>
   <div className="absolute bottom-0 -right-40 w-96 h-96 bg-indigo-100 rounded-full opacity-70 blur-3xl animate-float-medium"></div>
   <div className="absolute top-1/3 right-1/4 w-60 h-60 bg-blue-100 rounded-full opacity-50 blur-2xl animate-float-fast"></div>
 </div>
 
-  {/* </div> */}
-      {/* Content container */}
+
       <div className="max-w-7xl mx-auto px-6 py-20 md:py-32 grid grid-cols-1 lg:grid-cols-2 items-center gap-12 relative z-10">
-        {/* Text content with staggered animations */}
+
         <motion.div
           initial="hidden"
           animate="visible"
@@ -96,7 +92,6 @@ const Hero = () => {
           </motion.div>
         </motion.div>
 
-        {/* Hero image with enhanced animation */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 30 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -113,7 +108,7 @@ const Hero = () => {
               src={dashboardImage}
               alt="Analytics dashboard preview"
               className="w-full h-auto rounded-2xl shadow-2xl border border-gray-200/50 hover:border-sky-200 transition-all duration-300"
-              // onError={(e) => (e.target.src = fallbackImage)}
+
             />
             <div className="absolute inset-0 rounded-2xl shadow-[inset_0_0_30px_rgba(14,165,233,0.1)] pointer-events-none"></div>
           </div>

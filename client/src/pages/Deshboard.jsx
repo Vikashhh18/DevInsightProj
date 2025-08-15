@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { baseUrl } from "../utils/baseurl";
 
-// Main Dashboard Component
 const Dashboard = () => {
   const { user } = useUser();
   const userId = user?.id;
@@ -33,7 +32,6 @@ const Dashboard = () => {
   if (error) return <ErrorDisplay error={error} />;
   if (!profile) return <ProfileSetup user={user} />;
 
-  // Calculate profile completion
   const completionItems = [
     !!profile.github,
     !!profile.leetcode,
@@ -41,13 +39,11 @@ const Dashboard = () => {
   ];
   const completionPercent = Math.round((completionItems.filter(Boolean).length / completionItems.length) * 100);
 
-  // Calculate LeetCode percentages
   const leetCodeTotal = profile.leetcode?.totalSolved || 0;
   const leetCodeEasyPercent = leetCodeTotal > 0 ? Math.round((profile.leetcode?.easySolved / leetCodeTotal) * 100) : 0;
   const leetCodeMediumPercent = leetCodeTotal > 0 ? Math.round((profile.leetcode?.mediumSolved / leetCodeTotal) * 100) : 0;
   const leetCodeHardPercent = leetCodeTotal > 0 ? Math.round((profile.leetcode?.hardSolved / leetCodeTotal) * 100) : 0;
 
-  // Calculate GitHub language distribution
   const totalLanguageBytes = profile.github?.languagesUsed?.reduce((sum, lang) => sum + lang.bytes, 0) || 1;
   const languageDistribution = profile.github?.languagesUsed?.map(lang => ({
     name: lang.name,
@@ -86,12 +82,11 @@ const Dashboard = () => {
         <ProfileLinksSection profile={profile} />
       </div>
 
-      {/* <ActivityVisualization profile={profile} /> */}
+
     </div>
   );
 };
 
-// Loading Skeleton Component
 const LoadingSkeleton = () => (
   <div className="p-6 space-y-6 animate-pulse">
     <div className="bg-gray-100 rounded-xl p-6 h-28"></div>
@@ -108,7 +103,6 @@ const LoadingSkeleton = () => (
   </div>
 );
 
-// Error Display Component
 const ErrorDisplay = ({ error }) => (
   <div className="flex items-center justify-center min-h-screen p-4">
     <div className="w-full max-w-md bg-red-50 border border-red-200 text-red-600 p-6 rounded-xl">
@@ -129,7 +123,6 @@ const ErrorDisplay = ({ error }) => (
   </div>
 );
 
-// Profile Setup Component
 const ProfileSetup = ({ user }) => {
   const connectionCards = [
     {
@@ -240,7 +233,6 @@ const ProfileSetup = ({ user }) => {
   );
 };
 
-// Welcome Banner Component
 const WelcomeBanner = ({ user, profile, completionPercent }) => (
   <motion.div 
     initial={{ opacity: 0, y: 20 }}
@@ -303,7 +295,6 @@ const WelcomeBanner = ({ user, profile, completionPercent }) => (
   </motion.div>
 );
 
-// GitHub Profile Card Component
 const GitHubProfileCard = ({ profile, languageDistribution }) => (
   <motion.div 
     initial={{ opacity: 0, y: 20 }}
@@ -371,7 +362,6 @@ const GitHubProfileCard = ({ profile, languageDistribution }) => (
   </motion.div>
 );
 
-// LeetCode Profile Card Component
 const LeetCodeProfileCard = ({ 
   profile,
   leetCodeTotal,
@@ -439,7 +429,6 @@ const LeetCodeProfileCard = ({
   </motion.div>
 );
 
-// LinkedIn Profile Card Component
 const LinkedInProfileCard = ({ profile }) => {
   const skills = extractSkillsFromHeadline(profile.linkedin?.headline || "");
 
@@ -499,7 +488,6 @@ const LinkedInProfileCard = ({ profile }) => {
   );
 };
 
-// Skills Section Component
 const SkillsSection = ({ profile, leetCodeTotal, languageDistribution }) => (
   <motion.div 
     initial={{ opacity: 0, y: 20 }}
@@ -579,7 +567,6 @@ const SkillsSection = ({ profile, leetCodeTotal, languageDistribution }) => (
   </motion.div>
 );
 
-// Profile Links Section Component
 const ProfileLinksSection = ({ profile }) => {
   const socialLinks = [
     {
@@ -665,7 +652,6 @@ const StatBox = ({ label, value, icon, darkMode = false }) => (
   </div>
 );
 
-// Helper function to extract skills from LinkedIn headline
 const extractSkillsFromHeadline = (headline) => {
   if (!headline) return [];
   

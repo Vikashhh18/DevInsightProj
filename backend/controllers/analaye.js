@@ -22,14 +22,19 @@ export const githubAnalys = async (req, res) => {
       message: transcript,
     });
 
-    const text = response.text || "";
+    let text = response.text || "";
+    
+    // Clean the response to extract JSON from markdown code blocks
+    text = text.replace(/```json\s*/, '').replace(/```\s*$/, '').trim();
+    // Also handle cases where it might just be wrapped in ```
+    text = text.replace(/^```\s*/, '').replace(/```\s*$/, '').trim();
+
     res.status(200).json({ text });
   } catch (error) {
     console.error("Cohere API error:", error);
     res.status(500).json({ error: "Something went wrong with the analysis." });
   }
 };
-
 export const fetchLeetcodeProfile = async (req, res) => {
   const { username } = req.params;
 
@@ -46,138 +51,176 @@ export const fetchLeetcodeProfile = async (req, res) => {
 };
 
 export const leetcodeAnalys = async (req, res) => {
-  try {
-    
-    const { data } = req.body;
+  const profileData = req.body?.data || {};
 
-    if (!data) {
+  try {
+    if (!profileData || Object.keys(profileData).length === 0) {
       return res.status(400).json({ error: "Data is required for analysis" });
     }
 
-
     let analysisPrompt;
-    if (typeof data === "string") {
-      analysisPrompt = data;
-    } else if (typeof data === "object") {
 
-      analysisPrompt = `You are an expert in competitive programming. Analyze this LeetCode profile and return ONLY a VALID JSON object with EXACTLY these 3 fields:
-- strengths: array of strings
-- weaknesses: array of strings  
-- nextRecommendedQuestions: array of strings
-
-DO NOT return explanation, markdown, or extra text — only return the JSON object directly.
+    if (typeof profileData === "string") {
+      analysisPrompt = profileData;
+    } else if (typeof profileData === "object") {
+      analysisPrompt = `You are an expert in competitive programming.
+Analyze this LeetCode profile data and return ONLY valid JSON in this EXACT format:
+{
+  "strengths": ["string", ...],
+  "weaknesses": ["string", ...],
+  "nextRecommendedQuestions": ["string", ...]
+}
+Do not add any other keys, text, markdown, or explanation.
 
 LeetCode Profile Data:
-Total Solved: ${data.totalSolved || 0}
-Easy Solved: ${data.easySolved || 0}/${data.totalEasy || 0}
-Medium Solved: ${data.mediumSolved || 0}/${data.totalMedium || 0}
-Hard Solved: ${data.hardSolved || 0}/${data.totalHard || 0}
-Acceptance Rate: ${data.acceptanceRate || 'N/A'}%
-Ranking: ${data.ranking || 'Unranked'}
-Contribution Points: ${data.contributionPoints || 0}
+Total Solved: ${profileData.totalSolved || 0}
+Easy Solved: ${profileData.easySolved || 0}/${profileData.totalEasy || 0}
+Medium Solved: ${profileData.mediumSolved || 0}/${profileData.totalMedium || 0}
+Hard Solved: ${profileData.hardSolved || 0}/${profileData.totalHard || 0}
+Acceptance Rate: ${profileData.acceptanceRate || "N/A"}%
+Ranking: ${profileData.ranking || "Unranked"}
+Contribution Points: ${profileData.contributionPoints || 0}
 
 Based on this data, provide insights about strengths, areas to improve, and specific problem recommendations.`;
     } else {
       return res.status(400).json({ error: "Invalid data format" });
     }
 
-    if (analysisPrompt.trim() === "") {
-      return res.status(400).json({ error: "Empty data provided" });
-    }
-
-
-
+    // FIXED: Use correct Cohere API format
     const response = await cohere.chat({
       model: "command-r-plus",
       temperature: 0.3,
-      message: analysisPrompt,
+      message: analysisPrompt,  // Use 'message' not 'messages'
     });
 
-
-
-    const text = response.text || "";
-
-    if (!text || text.trim() === "") {
-      console.error("No text content found in response");
-      return res.status(500).json({ error: "No analysis content received from AI" });
-    }
-
-
-
-    let cleanedText = text.trim();
+    let cleanedText = (response.text || "").trim();
     if (cleanedText.startsWith("```")) {
       cleanedText = cleanedText.replace(/^```(?:json)?\n?/, "").replace(/```$/, "").trim();
     }
 
-
-    try {
-      const parsed = JSON.parse(cleanedText);
-      
-
-      if (!parsed.strengths || !parsed.weaknesses || !parsed.nextRecommendedQuestions) {
-        throw new Error("AI response missing required fields");
-      }
-      
-      if (!Array.isArray(parsed.strengths) || !Array.isArray(parsed.weaknesses) || !Array.isArray(parsed.nextRecommendedQuestions)) {
-        throw new Error("AI response fields are not arrays");
-      }
-
-
-      res.status(200).json({ 
-        text: cleanedText,
-        success: true 
-      });
-
-    } catch (parseError) {
-      console.error("JSON parsing failed:", parseError.message);
-      console.error("Cleaned text:", cleanedText);
-      
-
-      const fallbackResponse = {
-        strengths: [
-          data.totalSolved >= 100 ? "Consistent problem solver with good volume" : "Getting started with problem solving",
-          data.acceptanceRate >= 50 ? "Good problem-solving accuracy" : "Working on problem-solving approach",
-          data.mediumSolved > data.easySolved ? "Comfortable with medium difficulty" : "Building foundation with easier problems"
-        ].filter(Boolean),
-        weaknesses: [
-          data.hardSolved < 10 ? "Limited experience with hard problems" : null,
-          data.acceptanceRate < 60 ? "Can improve solution efficiency" : null,
-          data.totalSolved < 200 ? "Could benefit from more practice volume" : null
-        ].filter(Boolean),
-        nextRecommendedQuestions: [
-          "Two Sum", "Valid Parentheses", "Merge Two Sorted Lists",
-          "Binary Tree Inorder Traversal", "Maximum Subarray", "Climbing Stairs"
-        ]
-      };
-      
-      res.status(200).json({ 
-        text: JSON.stringify(fallbackResponse),
-        success: true,
-        fallback: true
-      });
+    // Try to extract JSON from the response
+    const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      console.log("No JSON found, using fallback");
+      throw new Error("No JSON object found in AI output");
     }
+
+    const parsed = JSON.parse(jsonMatch[0]);
+
+    if (
+      !Array.isArray(parsed.strengths) ||
+      !Array.isArray(parsed.weaknesses) ||
+      !Array.isArray(parsed.nextRecommendedQuestions)
+    ) {
+      console.log("Invalid structure, using fallback");
+      throw new Error("Invalid AI JSON structure");
+    }
+
+    // Success - return the AI analysis
+    res.status(200).json({
+      strengths: parsed.strengths,
+      weaknesses: parsed.weaknesses,
+      nextRecommendedQuestions: parsed.nextRecommendedQuestions,
+      success: true
+    });
 
   } catch (error) {
     console.error("LeetCode analysis error:", error);
-    
-    if (error.name === 'AbortError') {
-      return res.status(408).json({ error: "Request timeout" });
+
+    // Enhanced fallback logic based on actual data
+    const totalSolved = profileData.totalSolved || 0;
+    const acceptanceRate = profileData.acceptanceRate || 0;
+    const easySolved = profileData.easySolved || 0;
+    const mediumSolved = profileData.mediumSolved || 0;
+    const hardSolved = profileData.hardSolved || 0;
+    const ranking = profileData.ranking || null;
+
+    const strengths = [];
+    const weaknesses = [];
+
+    // Analyze strengths
+    if (totalSolved >= 500) {
+      strengths.push("Excellent problem-solving consistency with 500+ problems solved");
+    } else if (totalSolved >= 200) {
+      strengths.push("Strong problem-solving foundation with 200+ problems completed");
+    } else if (totalSolved >= 100) {
+      strengths.push("Good practice volume with 100+ problems solved");
+    } else if (totalSolved >= 50) {
+      strengths.push("Building momentum with 50+ problems completed");
+    } else {
+      strengths.push("Taking the first steps in competitive programming");
+    }
+
+    if (acceptanceRate >= 70) {
+      strengths.push("Excellent code quality with high acceptance rate");
+    } else if (acceptanceRate >= 50) {
+      strengths.push("Good problem-solving accuracy and approach");
+    }
+
+    if (hardSolved >= 50) {
+      strengths.push("Strong algorithmic skills with advanced problem solving");
+    } else if (hardSolved >= 20) {
+      strengths.push("Comfortable tackling challenging problems");
+    }
+
+    if (ranking && ranking <= 100000) {
+      strengths.push("Strong competitive programming ranking");
+    }
+
+    // Analyze weaknesses
+    if (acceptanceRate < 40) {
+      weaknesses.push("Focus on understanding problem requirements before coding");
+    }
+
+    if (totalSolved < 200) {
+      weaknesses.push("Increase practice frequency to build more problem-solving patterns");
+    }
+
+    if (hardSolved < 10 && totalSolved > 50) {
+      weaknesses.push("Challenge yourself with more hard-difficulty problems");
+    }
+
+    if (mediumSolved < easySolved && totalSolved > 100) {
+      weaknesses.push("Balance practice by focusing more on medium-difficulty problems");
+    }
+
+    if (acceptanceRate < 60 && totalSolved > 50) {
+      weaknesses.push("Work on code efficiency and edge case handling");
+    }
+
+    // Ensure we have content
+    if (strengths.length === 0) {
+      strengths.push("Every coding journey begins with dedication - keep practicing!");
     }
     
-    if (error.response) {
-      console.error("Cohere API error response:", error.response.data);
-      return res.status(500).json({ 
-        error: "AI service error", 
-        details: error.response.data?.message || error.message 
-      });
+    if (weaknesses.length === 0) {
+      weaknesses.push("Continue consistent practice to unlock new growth opportunities");
     }
-    
-    res.status(500).json({ 
-      error: "Analysis failed", 
-      details: error.message || "Unknown error occurred"
-    });
+
+    const fallbackResponse = {
+      strengths,
+      weaknesses,
+      nextRecommendedQuestions: [
+        "Two Sum", 
+        "Valid Parentheses", 
+        "Merge Two Sorted Lists",
+        "Maximum Subarray", 
+        "Climbing Stairs",
+        "Best Time to Buy and Sell Stock",
+        "Binary Tree Inorder Traversal",
+        "Symmetric Tree"
+      ],
+      success: true,
+      fallback: true
+    };
+
+    res.status(200).json(fallbackResponse);
   }
 };
+
+
+
+
 export const linkdinGenerate = async (req, res) => {
   const { name, degree, skills, experience, linkedinUrl } = req.body;
 
@@ -214,7 +257,7 @@ export const linkdinGenerate = async (req, res) => {
 
   try {
     const response = await cohere.generate({
-      model: "command-xlarge",
+      model: "command-r-plus",
       prompt,
       max_tokens: 500,
       temperature: 0.6,

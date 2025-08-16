@@ -235,7 +235,7 @@ const Leetcode = () => {
                   handleSampleClick(sample.username);
                   setShowWelcome(false);
                 }}
-                className="px-3 py-1.5 text-sm bg-white hover:bg-gray-100 text-gray-700 rounded-full shadow-sm border border-gray-200 transition-colors"
+                className="px-3 cursor-pointer py-1.5 text-sm bg-white hover:bg-gray-100 text-gray-700 rounded-full shadow-sm border border-gray-200 transition-colors"
               >
                 {sample.name}
               </button>
@@ -254,7 +254,7 @@ const Leetcode = () => {
             onKeyDown={(e) => e.key === "Enter" && handleAnalyze()}
           />
           <button
-            className={`px-6 py-3 rounded-lg font-medium text-white transition-colors ${
+            className={`px-6 py-3 cursor-pointer rounded-lg font-medium text-white transition-colors ${
               loading
                 ? "bg-blue-400 cursor-not-allowed"
                 : "bg-blue-600 hover:bg-blue-700"

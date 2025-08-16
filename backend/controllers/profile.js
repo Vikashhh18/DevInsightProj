@@ -140,46 +140,66 @@ export const getUserProfile =  async (req, res) => {
 };
 
 export const updateLeetCodeProfile = async (req, res) => {
-  const { userId, username } = req.body;
+  
+  const { userId, username, profileData } = req.body;
 
-  if (!userId || !username) {
-    return res.status(400).json({ error: 'userId and username are required' });
+  if (!userId || !username || !profileData) {
+    
+    return res.status(400).json({ 
+      error: 'userId, username and profileData are required',
+      received: { 
+        userId: !!userId, 
+        username: !!username,
+        profileData: !!profileData,
+        bodyKeys: Object.keys(req.body)
+      }
+    });
   }
 
   try {
-    const response = await axios.get(`https://leetcode-stats-api.herokuapp.com/${username}`);
-    const data = response.data;
-
-    if (!data || data.status === 'error') {
-      return res.status(404).json({ error: 'LeetCode profile not found' });
+    
+    let profile = await UserProfile.findOne({ userId });
+    
+    if (!profile) {
+      profile = new UserProfile({ userId });
     }
 
-    const leetcodeData = {
-      username,
-      profileUrl: `https://leetcode.com/${username}`,
-      totalSolved: data.totalSolved,
-      easySolved: data.easySolved,
-      mediumSolved: data.mediumSolved,
-      hardSolved: data.hardSolved,
-      ranking: data.ranking,
-      contestRating: data.contestRating || null
+    profile.leetcode = {
+      username: username,
+      profileUrl: profileData.profileUrl || `https://leetcode.com/${username}`,
+      totalSolved: profileData.totalSolved || 0,
+      easySolved: profileData.easySolved || 0,
+      mediumSolved: profileData.mediumSolved || 0,
+      hardSolved: profileData.hardSolved || 0,
+      // totalQuestions: profileData.totalQuestions || 0,
+      // totalEasy: profileData.totalEasy || 0,
+      // totalMedium: profileData.totalMedium || 0,
+      // totalHard: profileData.totalHard || 0,
+      // acceptanceRate: profileData.acceptanceRate || 0,
+      ranking: profileData.ranking || null,
+      contestRating: profileData.contestRating || null,
+      // score: profileData.score || 0,
+      // lastUpdated: new Date()
     };
 
-    const updatedProfile = await UserProfile.findOneAndUpdate(
-      { userId },
-      { $set: { leetcode: leetcodeData } },
-      { new: true, upsert: true }
-    );
+    await profile.save();
 
-    res.status(200).json({ 
-      message: "LeetCode data saved successfully", 
-      user: updatedProfile 
+
+    res.status(200).json({
+      message: "LeetCode profile updated successfully",
+      leetcode: profile.leetcode,
+      success: true
     });
   } catch (error) {
-    console.error("LeetCode fetch error:", error.message);
-    res.status(500).json({ error: "Failed to fetch LeetCode data" });
+    console.error("❌ Error updating LeetCode profile:", error);
+    
+    res.status(500).json({ 
+      error: "Failed to update LeetCode profile",
+      details: error.message 
+    });
   }
 };
+
 
 
 export const saveLinkedInData = async (req, res) => {
